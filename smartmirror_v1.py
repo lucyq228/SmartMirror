@@ -33,12 +33,12 @@ weather_unit = 'us' # see https://darksky.net/dev/docs/forecast for full list of
 location_api_token = 'bfed3d1a918eb13cda098a760d493ea9' #ipstack.com
 latitude = None #'41.6194' #None Set this if IP location lookup does not work for you (must be a string)
 longitude = None #'-87.8423' #None Set this if IP location lookup does not work for you (must be a string)
-xlarge_text_size = 58 #94
-large_text_size = 42 #48
-medium_text_size = 28 #28
-small_text_size = 16 #18
-xsmall_text_size = 12 #new
-#xxsmall_text_size = 12 #new
+#xlarge_text_size = 58 #94 not used
+large_text_size = 48 #42 used for clock
+medium_text_size = 28 #28 used for temperature
+small_text_size = 20 #16 used for day
+xsmall_text_size = 18 #12 quote, time tracking, current temp in text
+xxsmall_text_size = 13 #12 temp forecast, timer,quote bttn
 
 #New hide mouse after 1 sec no movement
 #import subprocess
@@ -152,56 +152,56 @@ class Weather(Frame):
         self.temperatureLbl.pack(side=LEFT, anchor=N) 
         self.iconLbl = Label(self.degreeFrm, bg="black")
         self.iconLbl.pack(side=LEFT, anchor=N, padx=5) #padx=20 
-        self.currentlyLbl = Label(self, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #medium_text_size
+        self.currentlyLbl = Label(self, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #medium_text_size
         self.currentlyLbl.pack(side=TOP,anchor=W, padx=5) # side=TOP
         #self.forecastLbl = Label(self, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #small_text_size
         #self.forecastLbl.pack(side=TOP, anchor=W)
-        self.locationLbl = Label(self, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #small_text_size
+        self.locationLbl = Label(self, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #small_text_size
         self.locationLbl.pack(side=TOP, anchor=W)
 
         #new next four days
         self.degreeFrm_d4 = Frame(self.degreeFrm, bg="black")
         self.degreeFrm_d4.pack(side=RIGHT, anchor=N, padx=20)
-        self.dayLbl_d4 = Label(self.degreeFrm_d4, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #medium_text_size
+        self.dayLbl_d4 = Label(self.degreeFrm_d4, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #medium_text_size
         self.dayLbl_d4.pack(side=TOP, anchor=N)
         self.iconLbl_d4 = Label(self.degreeFrm_d4, bg="black")
         self.iconLbl_d4.pack(anchor=N, padx=5) # side=LEFT, padx=20
-        self.temperatureLbl_d4_H = Label(self.degreeFrm_d4, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d4_H = Label(self.degreeFrm_d4, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d4_H.pack(anchor=N)  #side=LEFT,
-        self.temperatureLbl_d4_L = Label(self.degreeFrm_d4, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d4_L = Label(self.degreeFrm_d4, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d4_L.pack(anchor=N)  #side=LEFT,
 
         self.degreeFrm_d3 = Frame(self.degreeFrm, bg="black")
         self.degreeFrm_d3.pack(side=RIGHT, anchor=N, padx=20)
-        self.dayLbl_d3 = Label(self.degreeFrm_d3, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #medium_text_size
+        self.dayLbl_d3 = Label(self.degreeFrm_d3, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #medium_text_size
         self.dayLbl_d3.pack(side=TOP, anchor=N)
         self.iconLbl_d3 = Label(self.degreeFrm_d3, bg="black")
         self.iconLbl_d3.pack(anchor=N, padx=5) # side=LEFT, padx=20
-        self.temperatureLbl_d3_H = Label(self.degreeFrm_d3, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d3_H = Label(self.degreeFrm_d3, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d3_H.pack(anchor=N)  #side=LEFT,
-        self.temperatureLbl_d3_L = Label(self.degreeFrm_d3, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d3_L = Label(self.degreeFrm_d3, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d3_L.pack(anchor=N)  #side=LEFT,
 
         self.degreeFrm_d2 = Frame(self.degreeFrm, bg="black")
         self.degreeFrm_d2.pack(side=RIGHT, anchor=N, padx=20)
-        self.dayLbl_d2 = Label(self.degreeFrm_d2, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #medium_text_size
+        self.dayLbl_d2 = Label(self.degreeFrm_d2, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #medium_text_size
         self.dayLbl_d2.pack(side=TOP, anchor=N)
         self.iconLbl_d2 = Label(self.degreeFrm_d2, bg="black")
         self.iconLbl_d2.pack(anchor=N, padx=5) # side=LEFT, padx=20
-        self.temperatureLbl_d2_H = Label(self.degreeFrm_d2, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d2_H = Label(self.degreeFrm_d2, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d2_H.pack(anchor=N)  #side=LEFT,
-        self.temperatureLbl_d2_L = Label(self.degreeFrm_d2, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d2_L = Label(self.degreeFrm_d2, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d2_L.pack(anchor=N)  #side=LEFT,
 
         self.degreeFrm_d1 = Frame(self.degreeFrm, bg="black")
         self.degreeFrm_d1.pack(side=RIGHT, anchor=W, padx=20)
-        self.dayLbl_d1 = Label(self.degreeFrm_d1, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #medium_text_size
+        self.dayLbl_d1 = Label(self.degreeFrm_d1, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #medium_text_size
         self.dayLbl_d1.pack(side=TOP, anchor=N)
         self.iconLbl_d1 = Label(self.degreeFrm_d1, bg="black")
         self.iconLbl_d1.pack(anchor=N, padx=5) # side=LEFT, padx=20
-        self.temperatureLbl_d1_H = Label(self.degreeFrm_d1, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d1_H = Label(self.degreeFrm_d1, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d1_H.pack(anchor=N)  #side=LEFT,
-        self.temperatureLbl_d1_L = Label(self.degreeFrm_d1, font=('Helvetica', xsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
+        self.temperatureLbl_d1_L = Label(self.degreeFrm_d1, font=('Helvetica', xxsmall_text_size), fg="white", bg="black") #large_text_size #xlarge_text_size
         self.temperatureLbl_d1_L.pack(anchor=N)  #side=LEFT,
 
         self.get_weather()
@@ -416,7 +416,7 @@ class Quote(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, bg='black')
         self.title = 'Sucess is not final. Failure is not fatal. \nIt is the courage to continue that counts.'
-        self.quoteLbl = Label(self, text=self.title, font=('Helvetica', small_text_size), fg="white", bg="black")
+        self.quoteLbl = Label(self, text=self.title, font=('Helvetica', xsmall_text_size), fg="white", bg="black")
         self.quoteLbl.pack(anchor=N)
 
 #Bottom Quote
@@ -424,7 +424,7 @@ class Quote_bottom(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, bg='black')
         self.title = '经历  创造  拥有  忆起'
-        self.quoteLbl = Label(self, text=self.title, font=('Helvetica', xsmall_text_size), fg="white", bg="black")
+        self.quoteLbl = Label(self, text=self.title, font=('Helvetica', xxsmall_text_size), fg="white", bg="black")
         self.quoteLbl.pack(anchor=N)
 
 
@@ -550,28 +550,28 @@ class Timer(Frame):
         s.theme_use('clam')
         s.configure('Horizontal.TProgressbar', troughcolor='black', background='white') #foreground='white',
         self.pb = ttk.Progressbar(self.displayFrm, style='Horizontal.TProgressbar', orient='horizontal',
-                                  mode='determinate', length=455) #length=360,self.displayFrm
+                                  mode='determinate', length=500) #length=455,self.displayFrm
         self.pb.pack(side=TOP, anchor=N)
 
         #buttons
-        self.start_button = tk.Button(self.displayFrm, font=('Helvetica',xsmall_text_size), bg='black', fg='white',
+        self.start_button = tk.Button(self.displayFrm, font=('Helvetica',xxsmall_text_size), bg='black', fg='white',
                                       text='Pomodoro', width=7, height=2, command=self.start) #self.displayFrm
         self.start_button.pack(side=LEFT, anchor=E)
 
-        self.start_button_10 = tk.Button(self.displayFrm, font=('Helvetica', xsmall_text_size), bg='black', fg='white',
+        self.start_button_10 = tk.Button(self.displayFrm, font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
                               text='10 mins', width=7, height=2, command=self.start_10) #self.displayFrm
         self.start_button_10.pack(side=LEFT, anchor=E)
 
-        self.start_button_60 = tk.Button(self.displayFrm, font=('Helvetica', xsmall_text_size), bg='black', fg='white',
+        self.start_button_60 = tk.Button(self.displayFrm, font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
                               text='60 mins', width=7, height=2, command=self.start_60) #self.displayFrm
         self.start_button_60.pack(side=LEFT, anchor=E)
 
-        self.pause_button = tk.Button(self.displayFrm, font=('Helvetica', xsmall_text_size), bg='black', fg='white',
+        self.pause_button = tk.Button(self.displayFrm, font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
                               text='Reset', width=7, height=2, command=self.reset, state='disabled') #self.displayFrm
         self.pause_button.pack(side=LEFT, anchor=E)
 
-        self.complete_button = tk.Button(self.displayFrm, font=('Helvetica', xsmall_text_size), bg='black', fg='white',
-                              text='Complete', width=7, height=2, command=self.complete, state='disabled') #self.displayFrm
+        self.complete_button = tk.Button(self.displayFrm, font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
+                              text='Complete', width=8, height=2, command=self.complete, state='disabled') #self.displayFrm
         self.complete_button.pack(side=LEFT, anchor=E)
 
         #time tracking
@@ -594,14 +594,14 @@ class Timer(Frame):
         if self.state == True:
             if self.secs < 10:
                 if self.mins < 10:
-                    self.display.config(text='0%d : 0%d......%d mins' % (self.mins, self.secs, self.min_init))
+                    self.display.config(text='0%d : 0%d | %d mins' % (self.mins, self.secs, self.min_init))
                 else:
-                    self.display.config(text='%d : 0%d......%d mins' % (self.mins, self.secs, self.min_init))
+                    self.display.config(text='%d : 0%d | %d mins' % (self.mins, self.secs, self.min_init))
             else:
                 if self.mins < 10:
-                    self.display.config(text='0%d : %d......%d mins' % (self.mins, self.secs, self.min_init))
+                    self.display.config(text='0%d : %d | %d mins' % (self.mins, self.secs, self.min_init))
                 else:
-                    self.display.config(text='%d : %d......%d mins' % (self.mins, self.secs, self.min_init))
+                    self.display.config(text='%d : %d | %d mins' % (self.mins, self.secs, self.min_init))
 
             #when complete:
             if (self.mins == 0) and (self.secs == 0):
@@ -609,12 +609,12 @@ class Timer(Frame):
                 self.complete_button['state'] = 'disabled' #when complete, can only reset
                 if self.today == self.today2:
                     self.min_init2 += self.min_init
-                    self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' min'
+                    self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' mins'
                 else:
                     self.today = datetime.datetime.today().strftime('%Y-%m-%d')
                     self.min_init2 = 0
                     self.min_init2 += self.min_init
-                    self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' min'
+                    self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' mins'
 
                 self.state = False
                 self.minutes = 25  # 25
@@ -764,10 +764,10 @@ class Timer(Frame):
             if self.today != self.today2:
                 self.min_init2 = 0
                 self.min_init2 += self.min_init
-                self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' min'
+                self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' mins'
             else:
                 self.min_init2 += self.min_init
-                self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' min'
+                self.tracking_bttn['text'] = 'Today\'s Pomodoro Time: ' + str(self.min_init2) + ' mins'
 
             self.state = False
             self.display.config(text = '00:00')
@@ -822,10 +822,10 @@ class FullscreenWindow:
         self.tk.bind("<Escape>", self.end_fullscreen)
         # clock
         self.clock = Clock(self.topFrame)
-        self.clock.pack(side=RIGHT, anchor=N, padx=50, pady=60) #padx=50, pady=60
+        self.clock.pack(side=RIGHT, anchor=N, padx=10, pady=60) #padx=50, pady=60
         #quote
         self.quote = Quote(self.midFrame)
-        self.quote.pack(anchor=N, padx=50, pady=10) #padx=70,anchor=W, padx=100, pady=60
+        self.quote.pack(anchor=N, padx=10, pady=10) #padx=50,anchor=W, padx=100, pady=60
         #timer
         self.timer = Timer(self.midFrame)
         self.timer.pack(anchor=N, padx=10, pady=10)  #padx=70, anchor=W, padx=100, pady=60

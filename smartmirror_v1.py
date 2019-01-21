@@ -594,14 +594,14 @@ class Timer(Frame):
         if self.state == True:
             if self.secs < 10:
                 if self.mins < 10:
-                    self.display.config(text='0%d : 0%d' % (self.mins, self.secs))
+                    self.display.config(text='0%d : 0%d......%d mins' % (self.mins, self.secs, self.min_init))
                 else:
-                    self.display.config(text='%d : 0%d' % (self.mins, self.secs))
+                    self.display.config(text='%d : 0%d......%d mins' % (self.mins, self.secs, self.min_init))
             else:
                 if self.mins < 10:
-                    self.display.config(text='0%d : %d' % (self.mins, self.secs))
+                    self.display.config(text='0%d : %d......%d mins' % (self.mins, self.secs, self.min_init))
                 else:
-                    self.display.config(text='%d : %d' % (self.mins, self.secs))
+                    self.display.config(text='%d : %d......%d mins' % (self.mins, self.secs, self.min_init))
 
             #when complete:
             if (self.mins == 0) and (self.secs == 0):

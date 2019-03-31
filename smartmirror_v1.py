@@ -901,7 +901,7 @@ class PageOne(tk.Frame):
         # self.calender.pack(side = RIGHT, anchor=S, padx=100, pady=60)
 
 
-
+# Connect to GoogleCalendar API
 class PageTwo(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -1008,10 +1008,6 @@ class PageTwo(tk.Frame):
                 eDiff.append(str(vars()['dayDiff' + str(i)].days))
 
             return eSummary, eDiff, eDate, estartTime, eendTime
-
-        # label = tk.Label(self.midFrame, bg='black', font=('Helvetica', xsmall_text_size), fg='white',
-        #                  text='Page 2 --- google calendar', width=40, height=8)
-        # label.pack(anchor=N, padx=10, pady=10)
 
         colr = 'white'
         colr2 = 'white'
@@ -1245,18 +1241,99 @@ class PageTwo(tk.Frame):
         self.quote_bottom.pack(anchor=N, padx=70)  # anchor=W, padx=100, pady=60
 
 
+# connect to GoogleSheet API
 class PageThree(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        # label = tk.Label(self, text="Page Two!!!", font=LARGE_FONT)
-        label = tk.Label(self, bg='black', font=('Helvetica', xsmall_text_size), fg='white',
-                         text='Page 3 --- Code Review', width=40, height=8)
-        label.pack(pady=10, padx=10)
 
-        button2 = tk.Button(self, text="<<<<", font=('Helvetica', xsmall_text_size), bg='black', fg='white',
+        def toggle_fullscreen(self, event=None):
+            self.state = not self.state  # Just toggling the boolean
+            self.tk.attributes("-fullscreen", self.state)
+            return "break"
+
+        def end_fullscreen(self, event=None):
+            self.state = False
+            self.tk.attributes("-fullscreen", False)
+            return "break"
+
+        self.topFrame = Frame(self, background='black')
+        self.midFrame = Frame(self, background='black')
+        self.bottomFrame = Frame(self, background='black')
+        self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
+        self.midFrame.pack(fill=BOTH, expand=YES)
+        self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
+        self.state = False
+        self.bind("<Return>", toggle_fullscreen)
+        self.bind("<Escape>", end_fullscreen)
+
+        # clock
+        self.clock = Clock(self.topFrame)
+        self.clock.pack(side=RIGHT, anchor=N, padx=10, pady=60)  # padx=50, pady=60
+
+        # google sheet API
+        # If modifying these scopes, delete the file token.pickle.
+        SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+
+        # The ID and range of a sample spreadsheet.
+        SAMPLE_SPREADSHEET_ID = '17oHHC0iFY5VCQsHAyYe22jrSUcriwmV5eWI9RzXDrdA'
+        Python_RANGE_NAME = 'Python!$A$2:$B$100000'
+        Pyspark_RANGE_NAME = 'Pyspark!A:B'
+        Tensorflow_RANGE_NAME = 'Tensorflow!A:B'
+
+        """Shows basic usage of the Sheets API.
+            Prints values from a sample spreadsheet.
+            """
+        creds = None
+        # The file token.pickle stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        if os.path.exists('token_googlesheet.pickle'):
+            with open('token_googlesheet.pickle', 'rb') as token:
+                creds = pickle.load(token)
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials_googlesheet.json', SCOPES)
+                creds = flow.run_local_server()
+            # Save the credentials for the next run
+            with open('token_googlesheet.pickle', 'wb') as token:
+                pickle.dump(creds, token)
+
+        service = build('sheets', 'v4', credentials=creds)
+
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+        python_result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                           range=Python_RANGE_NAME).execute()
+        python_values = python_result.get('values', [])
+
+        pyspark_result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                            range=Pyspark_RANGE_NAME).execute()
+        pyspark_values = pyspark_result.get('values', [])
+
+        tensorflow_result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                               range=Tensorflow_RANGE_NAME).execute()
+        tensorflow_values = tensorflow_result.get('values', [])
+
+        for row in python_values[0:]:
+            if str(row[1]) == 'Y':
+                self.label = tk.Label(self.midFrame, bg='black', font=('Helvetica', xxsmall_text_size), fg='white',
+                                      text=str(row[0]))  # width=40, height=8
+                self.label.pack(side='top', anchor='w', padx=10)  # pady=10,
+            else:
+                pass
+
+        button2 = tk.Button(self.bottomFrame, text="<<<<", font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
                             borderwidth=0, command=lambda: controller.show_frame(PageTwo))
-        button2.pack(side="left", anchor='w')
+        button2.pack(side="top", anchor='n')
+
+        # quote bottom
+        self.quote_bottom = Quote_bottom(self.bottomFrame)
+        self.quote_bottom.pack(anchor=N, padx=70)  # anchor=W, padx=100, pady=60
 
 #
 # class FullscreenWindow:

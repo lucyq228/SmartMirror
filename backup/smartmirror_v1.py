@@ -10,16 +10,19 @@ import requests
 import json
 import traceback
 # import feedparser
-
 from PIL import Image, ImageTk
 from contextlib import contextmanager
-
 import time
-
 import tkinter as tk
 from tkinter import ttk  # progress bar
-
 import datetime  # to show Pomodoro time only for today
+#for google calendar
+import pickle
+import re
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 LOCALE_LOCK = threading.Lock()
 
@@ -914,9 +917,9 @@ class PageTwo(tk.Frame):
             self.tk.attributes("-fullscreen", False)
             return "break"
 
-        self.topFrame = Frame(self, background='black') #self.tk
-        self.midFrame = Frame(self, background='black') #self.tk
-        self.bottomFrame = Frame(self, background='black') #self.tk
+        self.topFrame = Frame(self, background='black')
+        self.midFrame = Frame(self, background='black')
+        self.bottomFrame = Frame(self, background='black')
         self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
         self.midFrame.pack(fill=BOTH, expand=YES)
         self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
@@ -927,39 +930,319 @@ class PageTwo(tk.Frame):
         # clock
         self.clock = Clock(self.topFrame)
         self.clock.pack(side=RIGHT, anchor=N, padx=10, pady=60)  # padx=50, pady=60
-        # quote
-        self.quote = Quote(self.midFrame)
-        self.quote.pack(anchor=N, padx=10, pady=10)  # padx=50,anchor=W, padx=100, pady=60
 
-        label = tk.Label(self.midFrame, bg='black', font=('Helvetica', xsmall_text_size), fg='white',
-                         text='Page 2 --- google calendar', width=40, height=8)
-        label.pack(anchor=N, padx=10, pady=10)
-        # calender - removing for now
-        # self.calender = Calendar(self.bottomFrame)
-        # self.calender.pack(side = RIGHT, anchor=S, padx=100, pady=60)
+        # add calendar module here
+        """Shows basic usage of the Google Calendar API.
+                Prints the start and name of the next 10 events on the user's calendar.
+                """
+        creds = None
+        # The file token.pickle stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        if os.path.exists('token.pickle'):
+            with open('token.pickle', 'rb') as token:
+                creds = pickle.load(token)
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+                creds = flow.run_local_server()
+            # Save the credentials for the next run
+            with open('token.pickle', 'wb') as token:
+                pickle.dump(creds, token)
 
-        self.bttn_frame = tk.Frame(self.midFrame, bg='black')
-        self.bttn_frame.pack(side='bottom', anchor ='n')
+        service = build('calendar', 'v3', credentials=creds)
 
-        self.bttn_frame1 = tk.Frame(self.bttn_frame, bg="black")
-        self.bttn_frame1.pack(side='left', anchor='w')
-        button1 = tk.Button(self.bttn_frame1, text="<<<<", font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+        print('Getting the upcoming 10 events')
+        events_result = service.events().list(calendarId='primary', timeMin=now,
+                                              maxResults=10, singleEvents=True,
+                                              orderBy='startTime').execute()
+        events = events_result.get('items', [])
+
+        if not events:
+            print('No upcoming events found.')
+
+        def retrieve(i):
+            vars()['start' + str(i)] = events[i]['start'].get('dateTime', events[i]['start'].get('date'))
+            vars()['summary' + str(i)] = events[i]['summary']
+            vars()['end' + str(i)] = events[i]['end'].get('dateTime', events[i]['end'].get('date'))
+
+            return vars()['start' + str(i)], vars()['summary' + str(i)], vars()['end' + str(i)]
+
+        def format():
+            eSummary = []
+            eDate = []
+            estartTime = []
+            eendTime = []
+            eDiff = []
+
+            for i in range(9):
+                vars()['start' + str(i)], vars()['summary' + str(i)], vars()['end' + str(i)] = retrieve(i)
+                vars()['start' + str(i)] = re.sub('T', ' ', vars()['start' + str(i)])  # remove "T"
+                vars()['end' + str(i)] = re.sub('T', ' ', vars()['end' + str(i)])  # remove "T"
+
+                vars()['eventDate' + str(i)] = vars()['start' + str(i)][:10]  # store date
+                vars()['dayDiff' + str(i)] = datetime.datetime.strptime(vars()['eventDate' + str(i)],
+                                                                        "%Y-%m-%d") - datetime.datetime.today()  # calculate days diff
+                vars()['eventDate' + str(i)] = datetime.datetime.strptime(vars()['eventDate' + str(i)],
+                                                                          "%Y-%m-%d").strftime(
+                    "%a, %b %d")  # format date %Y
+                vars()['startTime' + str(i)] = vars()['start' + str(i)][11:16]  # store time
+                vars()['endTime' + str(i)] = vars()['end' + str(i)][11:16]  # store time
+
+                # in case no "@" in event summary
+                if '@' in str(vars()['summary' + str(i)]):
+                    pass
+                else:
+                    vars()['summary' + str(i)] = vars()['summary' + str(i)] + " @ "
+
+                eSummary.append(vars()['summary' + str(i)])
+                eDate.append(vars()['eventDate' + str(i)])
+                estartTime.append(vars()['startTime' + str(i)])
+                eendTime.append(vars()['endTime' + str(i)])
+                eDiff.append(str(vars()['dayDiff' + str(i)].days))
+
+            return eSummary, eDiff, eDate, estartTime, eendTime
+
+        # label = tk.Label(self.midFrame, bg='black', font=('Helvetica', xsmall_text_size), fg='white',
+        #                  text='Page 2 --- google calendar', width=40, height=8)
+        # label.pack(anchor=N, padx=10, pady=10)
+
+        colr = 'white'
+        colr2 = 'white'
+
+        self.calFrame0_1 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame0_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame0_2 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame0_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+
+        self.calFrame1_1 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame1_1.pack(side='top', anchor='w',padx=40,  pady=(12, 0))
+        self.calFrame1_2 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame1_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+
+        self.calFrame2_1 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame2_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame2_2 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame2_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+
+        self.calFrame3_1 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame3_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame3_2 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame3_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+
+        self.calFrame4_1 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame4_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame4_2 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame4_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+
+        self.calFrame5_1 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame5_1.pack(side='top', anchor='n', padx=40, pady=(12, 0))
+        self.calFrame5_2 = tk.Frame(self.midFrame, bg="black")
+        self.calFrame5_2.pack(side='top', anchor='n', padx=40, pady=(0, 15))
+
+        # self.calFrame6_1 = tk.Frame(self.midFrame, bg="black")
+        # self.calFrame6_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        # self.calFrame6_2 = tk.Frame(self.midFrame, bg="black")
+        # self.calFrame6_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        #
+        # self.calFrame7_1 = tk.Frame(self.midFrame, bg="black")
+        # self.calFrame7_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        # self.calFrame7_2 = tk.Frame(self.midFrame, bg="black")
+        # self.calFrame7_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        #
+        # self.calFrame8_1 = tk.Frame(self.midFrame, bg="black")
+        # self.calFrame8_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        # self.calFrame8_2 = tk.Frame(self.midFrame, bg="black")
+        # self.calFrame8_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+
+        # event0
+        self.event0 = tk.Label(self.calFrame0_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr,
+                               text=(format()[0][0].split(' @')[0]))
+        self.event0.pack(side='left', anchor='w')
+        self.location0 = tk.Label(self.calFrame0_2, bg='black', font=('courier', xxsmall_text_size), fg=colr,
+                                  text=("@ " + format()[0][0].split("@ ", 1)[1]))
+        self.location0.pack(side='top', anchor='w')
+
+        self.dDiff0 = tk.Label(self.calFrame0_2, bg='black', font=('courier', xxsmall_text_size), fg=colr,
+                               text=("in " + format()[1][0] + " days."))
+        self.dDiff0.pack(side='left', anchor='w')
+        self.date0 = tk.Label(self.calFrame0_2, bg='black', font=('courier', xxsmall_text_size), fg=colr,
+                              text=('on ' + format()[2][0]) + ".")
+        self.date0.pack(side='left', anchor='w')
+        self.starttime0 = tk.Label(self.calFrame0_2, bg='black', font=('courier', xxsmall_text_size), fg=colr,
+                                   text=('at ' + format()[3][0] + " -"))
+        self.starttime0.pack(side='left', anchor='w')
+        self.endtime0 = tk.Label(self.calFrame0_2, bg='black', font=('courier', xxsmall_text_size), fg=colr,
+                                 text=(format()[4][0]))
+        self.endtime0.pack(side='left', anchor='w')
+
+        # event1
+        self.event1 = tk.Label(self.calFrame1_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+                               text=(format()[0][1].split(' @')[0]))
+        self.event1.pack(side='left', anchor='w')
+        self.location1 = tk.Label(self.calFrame1_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                  text=("@ " + format()[0][1].split("@ ", 1)[1]))
+        self.location1.pack(side='top', anchor='w')
+
+        self.dDiff1 = tk.Label(self.calFrame1_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                               text=("in " + format()[1][1] + " days."))
+        self.dDiff1.pack(side='left', anchor='w')
+        self.date1 = tk.Label(self.calFrame1_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                              text=('on ' + format()[2][1]) + ".")
+        self.date1.pack(side='left', anchor='w')
+        self.starttime1 = tk.Label(self.calFrame1_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                   text=('at ' + format()[3][1] + " -"))
+        self.starttime1.pack(side='left', anchor='w')
+        self.endtime1 = tk.Label(self.calFrame1_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                 text=(format()[4][1]))
+        self.endtime1.pack(side='left', anchor='w')
+
+        # event2
+        self.event2 = tk.Label(self.calFrame2_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+                               text=(format()[0][2].split(' @')[0]))
+        self.event2.pack(side='left', anchor='w')
+        self.location2 = tk.Label(self.calFrame2_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                  text=("@ " + format()[0][2].split("@ ", 1)[1]))
+        self.location2.pack(side='top', anchor='w')
+
+        self.dDiff2 = tk.Label(self.calFrame2_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                               text=("in " + format()[1][2] + " days."))
+        self.dDiff2.pack(side='left', anchor='w')
+        self.date2 = tk.Label(self.calFrame2_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                              text=('on ' + format()[2][2]) + ".")
+        self.date2.pack(side='left', anchor='w')
+        self.starttime2 = tk.Label(self.calFrame2_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                   text=('at ' + format()[3][2] + " -"))
+        self.starttime2.pack(side='left', anchor='w')
+        self.endtime2 = tk.Label(self.calFrame2_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                 text=(format()[4][2]))
+        self.endtime2.pack(side='left', anchor='w')
+
+        # event3
+        self.event3 = tk.Label(self.calFrame3_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+                               text=(format()[0][3].split(' @')[0]))
+        self.event3.pack(side='left', anchor='w')
+        self.location3 = tk.Label(self.calFrame3_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                  text=("@ " + format()[0][3].split("@ ", 1)[1]))
+        self.location3.pack(side='top', anchor='w')
+
+        self.dDiff3 = tk.Label(self.calFrame3_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                               text=("in " + format()[1][3] + " days."))
+        self.dDiff3.pack(side='left', anchor='w')
+        self.date3 = tk.Label(self.calFrame3_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                              text=('on ' + format()[2][3]) + ".")
+        self.date3.pack(side='left', anchor='w')
+        self.starttime3 = tk.Label(self.calFrame3_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                   text=('at ' + format()[3][3] + " -"))
+        self.starttime3.pack(side='left', anchor='w')
+        self.endtime3 = tk.Label(self.calFrame3_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                 text=(format()[4][3]))
+        self.endtime3.pack(side='left', anchor='w')
+
+        # event4
+        self.event4 = tk.Label(self.calFrame4_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+                               text=(format()[0][4].split(' @')[0]))
+        self.event4.pack(side='left', anchor='w')
+        self.location4 = tk.Label(self.calFrame4_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                  text=("@ " + format()[0][4].split("@ ", 1)[1]))
+        self.location4.pack(side='top', anchor='w')
+
+        self.dDiff4 = tk.Label(self.calFrame4_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                               text=("in " + format()[1][4] + " days."))
+        self.dDiff4.pack(side='left', anchor='w')
+        self.date4 = tk.Label(self.calFrame4_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                              text=('on ' + format()[2][4]) + ".")
+        self.date4.pack(side='left', anchor='w')
+        self.starttime4 = tk.Label(self.calFrame4_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                   text=('at ' + format()[3][4] + " -"))
+        self.starttime4.pack(side='left', anchor='w')
+        self.endtime4 = tk.Label(self.calFrame4_2, bg='black', font=('courier', xxsmall_text_size), fg=colr2,
+                                 text=(format()[4][4]))
+        self.endtime4.pack(side='left', anchor='w')
+
+        # # event5
+        # self.event5 = tk.Label(self.calFrame5_1, bg='black', font=('Helvetica', small_text_size), fg=colr2,
+        #                        text=(format()[0][5].split(' @')[0]))
+        # self.event5.pack(side='left', anchor='s')
+        # self.location5 = tk.Label(self.calFrame5_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                           text=("@ " + format()[0][5].split("@ ", 1)[1]))
+        # self.location5.pack(side='left', anchor='s')
+        #
+        # self.dDiff5 = tk.Label(self.calFrame5_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                        text=("in " + format()[1][5] + " days ==>"))
+        # self.dDiff5.pack(side='left', anchor='n')
+        # self.date5 = tk.Label(self.calFrame5_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                       text=('on ' + format()[2][5]) + " ==>")
+        # self.date5.pack(side='left', anchor='n')
+        # self.starttime5 = tk.Label(self.calFrame5_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                            text=('at ' + format()[3][5] + "-"))
+        # self.starttime5.pack(side='left', anchor='n')
+        # self.endtime5 = tk.Label(self.calFrame5_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                          text=(format()[4][5]))
+        # self.endtime5.pack(side='left', anchor='n')
+        #
+        # # event6
+        # self.event6 = tk.Label(self.calFrame6_1, bg='black', font=('Helvetica', small_text_size), fg=colr2,
+        #                        text=(format()[0][6].split(' @')[0]))
+        # self.event6.pack(side='left', anchor='s')
+        # self.location6 = tk.Label(self.calFrame6_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                           text=("@ " + format()[0][6].split("@ ", 1)[1]))
+        # self.location6.pack(side='left', anchor='s')
+        #
+        # self.dDiff6 = tk.Label(self.calFrame6_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                        text=("in " + format()[1][6] + " days ==>"))
+        # self.dDiff6.pack(side='left', anchor='n')
+        # self.date6 = tk.Label(self.calFrame6_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                       text=('on ' + format()[2][6]) + " ==>")
+        # self.date6.pack(side='left', anchor='n')
+        # self.starttime6 = tk.Label(self.calFrame6_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                            text=('at ' + format()[3][6] + "-"))
+        # self.starttime6.pack(side='left', anchor='n')
+        # self.endtime6 = tk.Label(self.calFrame6_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                          text=(format()[4][6]))
+        # self.endtime6.pack(side='left', anchor='n')
+        #
+        # # event7
+        # self.event7 = tk.Label(self.calFrame7_1, bg='black', font=('Helvetica', small_text_size), fg=colr2,
+        #                        text=(format()[0][7].split(' @')[0]))
+        # self.event7.pack(side='left', anchor='s')
+        # self.location7 = tk.Label(self.calFrame7_1, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                           text=("@ " + format()[0][7].split("@ ", 1)[1]))
+        # self.location7.pack(side='left', anchor='s')
+        #
+        # self.dDiff7 = tk.Label(self.calFrame7_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                        text=("in " + format()[1][7] + " days ==>"))
+        # self.dDiff7.pack(side='left', anchor='n')
+        # self.date7 = tk.Label(self.calFrame7_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                       text=('on ' + format()[2][7]) + " ==>")
+        # self.date7.pack(side='left', anchor='n')
+        # self.starttime7 = tk.Label(self.calFrame7_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                            text=('at ' + format()[3][7] + "-"))
+        # self.starttime7.pack(side='left', anchor='n')
+        # self.endtime7 = tk.Label(self.calFrame7_2, bg='black', font=('Helvetica', xsmall_text_size), fg=colr2,
+        #                          text=(format()[4][7]))
+        # self.endtime7.pack(side='left', anchor='n')
+        #
+
+        button1 = tk.Button(self.calFrame5_2, text="<<<<", font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
                             borderwidth=0, command=lambda: controller.show_frame(PageOne))
         button1.pack(side="left", anchor='w')
 
-        self.bttn_frame2 = tk.Frame(self.bttn_frame, bg="black")
+        self.bttn_frame2 = tk.Frame(self.calFrame5_2, bg="black")
         self.bttn_frame2.pack(side='left', anchor='e')
         button2 = tk.Button(self.bttn_frame2, text=">>>>", font=('Helvetica', xxsmall_text_size), bg='black', fg='white',
-                            borderwidth=0, command=lambda: controller.show_frame(PageTwo))
+                            borderwidth=0, command=lambda: controller.show_frame(PageThree))
         button2.pack(side="right", anchor='e')
 
         # quote bottom
         self.quote_bottom = Quote_bottom(self.bottomFrame)
         self.quote_bottom.pack(anchor=N, padx=70)  # anchor=W, padx=100, pady=60
-
-        # news
-        # self.news = News(self.midFrame) #bottomFrame
-        # self.news.pack(anchor=W, padx=10, pady=60) #side=LEFT, anchor=S, padx=100, pady=60
 
 
 class PageThree(tk.Frame):
@@ -968,11 +1251,11 @@ class PageThree(tk.Frame):
         tk.Frame.__init__(self, parent)
         # label = tk.Label(self, text="Page Two!!!", font=LARGE_FONT)
         label = tk.Label(self, bg='black', font=('Helvetica', xsmall_text_size), fg='white',
-                         text='Page 2 --- google calendar', width=40, height=8)
+                         text='Page 3 --- Code Review', width=40, height=8)
         label.pack(pady=10, padx=10)
 
         button2 = tk.Button(self, text="<<<<", font=('Helvetica', xsmall_text_size), bg='black', fg='white',
-                            command=lambda: controller.show_frame(PageOne))
+                            borderwidth=0, command=lambda: controller.show_frame(PageTwo))
         button2.pack(side="left", anchor='w')
 
 #

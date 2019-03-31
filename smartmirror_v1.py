@@ -43,7 +43,7 @@ small_text_size = 20  # 16 used for day
 xsmall_text_size = 18  # 12 quote, time tracking, current temp in text
 xxsmall_text_size = 13  # 12 temp forecast, timer,quote bttn
 
-pic_location = "C:/Users/cheng/Documents/A_Developing/Smart_mirror/pycharm/SmartMirror_full/assets/"
+pic_location = "/home/pi/SmartMirror2.0/assets/"
 
 
 # /home/pi/SmartMirror/assets/
@@ -842,26 +842,6 @@ class PageOne(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        # label = tk.Label(self, bg='black', font=('Helvetica', xsmall_text_size), fg='white',
-        #                  text='Page 2 --- google calendar', width=40, height=8)
-        # label.pack(pady=10, padx=10)
-        #
-        # button2 = tk.Button(self, text="<<<<", font=('Helvetica', xsmall_text_size), bg='black', fg='white',
-        #                     command=lambda: controller.show_frame(Timer))
-        # button2.pack(side="left", anchor='w')
-
-        # self.tk = Tk()
-        # self.tk.configure(background='black')
-
-        def toggle_fullscreen(self, event=None):
-            self.state = not self.state  # Just toggling the boolean
-            self.tk.attributes("-fullscreen", self.state)
-            return "break"
-
-        def end_fullscreen(self, event=None):
-            self.state = False
-            self.tk.attributes("-fullscreen", False)
-            return "break"
 
         self.topFrame = Frame(self, background='black') #self.tk
         self.midFrame = Frame(self, background='black') #self.tk
@@ -869,10 +849,7 @@ class PageOne(tk.Frame):
         self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
         self.midFrame.pack(fill=BOTH, expand=YES)
         self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
-        self.state = False
-        self.bind("<Return>", toggle_fullscreen)
-        self.bind("<Escape>", end_fullscreen)
-
+        
         # clock
         self.clock = Clock(self.topFrame)
         self.clock.pack(side=RIGHT, anchor=N, padx=10, pady=60)  # padx=50, pady=60
@@ -907,26 +884,13 @@ class PageTwo(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        def toggle_fullscreen(self, event=None):
-            self.state = not self.state  # Just toggling the boolean
-            self.tk.attributes("-fullscreen", self.state)
-            return "break"
-
-        def end_fullscreen(self, event=None):
-            self.state = False
-            self.tk.attributes("-fullscreen", False)
-            return "break"
-
         self.topFrame = Frame(self, background='black')
         self.midFrame = Frame(self, background='black')
         self.bottomFrame = Frame(self, background='black')
         self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
         self.midFrame.pack(fill=BOTH, expand=YES)
         self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
-        self.state = False
-        self.bind("<Return>", toggle_fullscreen)
-        self.bind("<Escape>", end_fullscreen)
-
+        
         # clock
         self.clock = Clock(self.topFrame)
         self.clock.pack(side=RIGHT, anchor=N, padx=10, pady=60)  # padx=50, pady=60
@@ -988,7 +952,7 @@ class PageTwo(tk.Frame):
 
                 vars()['eventDate' + str(i)] = vars()['start' + str(i)][:10]  # store date
                 vars()['dayDiff' + str(i)] = datetime.datetime.strptime(vars()['eventDate' + str(i)],
-                                                                        "%Y-%m-%d") - datetime.datetime.today()  # calculate days diff
+                                                                        "%Y-%m-%d") - datetime.datetime.today() # calculate days diff
                 vars()['eventDate' + str(i)] = datetime.datetime.strptime(vars()['eventDate' + str(i)],
                                                                           "%Y-%m-%d").strftime(
                     "%a, %b %d")  # format date %Y
@@ -1005,42 +969,43 @@ class PageTwo(tk.Frame):
                 eDate.append(vars()['eventDate' + str(i)])
                 estartTime.append(vars()['startTime' + str(i)])
                 eendTime.append(vars()['endTime' + str(i)])
-                eDiff.append(str(vars()['dayDiff' + str(i)].days))
+                eDiff.append(str(vars()['dayDiff' + str(i)].days+1))
 
             return eSummary, eDiff, eDate, estartTime, eendTime
 
         colr = 'white'
         colr2 = 'white'
+        tpadx = (20,0)
 
         self.calFrame0_1 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame0_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame0_1.pack(side='top', anchor='w', padx=tpadx, pady=(12, 0))
         self.calFrame0_2 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame0_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        self.calFrame0_2.pack(side='top', anchor='w', padx=tpadx, pady=(0, 15))
 
         self.calFrame1_1 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame1_1.pack(side='top', anchor='w',padx=40,  pady=(12, 0))
+        self.calFrame1_1.pack(side='top', anchor='w',padx=tpadx,  pady=(12, 0))
         self.calFrame1_2 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame1_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        self.calFrame1_2.pack(side='top', anchor='w', padx=tpadx, pady=(0, 15))
 
         self.calFrame2_1 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame2_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame2_1.pack(side='top', anchor='w', padx=tpadx, pady=(12, 0))
         self.calFrame2_2 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame2_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        self.calFrame2_2.pack(side='top', anchor='w', padx=tpadx, pady=(0, 15))
 
         self.calFrame3_1 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame3_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame3_1.pack(side='top', anchor='w', padx=tpadx, pady=(12, 0))
         self.calFrame3_2 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame3_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        self.calFrame3_2.pack(side='top', anchor='w', padx=tpadx, pady=(0, 15))
 
         self.calFrame4_1 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame4_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
+        self.calFrame4_1.pack(side='top', anchor='w', padx=tpadx, pady=(12, 0))
         self.calFrame4_2 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame4_2.pack(side='top', anchor='w', padx=40, pady=(0, 15))
+        self.calFrame4_2.pack(side='top', anchor='w', padx=tpadx, pady=(0, 15))
 
         self.calFrame5_1 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame5_1.pack(side='top', anchor='n', padx=40, pady=(12, 0))
+        self.calFrame5_1.pack(side='top', anchor='n', padx=tpadx, pady=(12, 0))
         self.calFrame5_2 = tk.Frame(self.midFrame, bg="black")
-        self.calFrame5_2.pack(side='top', anchor='n', padx=40, pady=(0, 15))
+        self.calFrame5_2.pack(side='top', anchor='n', padx=tpadx, pady=(0, 15))
 
         # self.calFrame6_1 = tk.Frame(self.midFrame, bg="black")
         # self.calFrame6_1.pack(side='top', anchor='w', padx=40, pady=(12, 0))
@@ -1247,26 +1212,13 @@ class PageThree(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        def toggle_fullscreen(self, event=None):
-            self.state = not self.state  # Just toggling the boolean
-            self.tk.attributes("-fullscreen", self.state)
-            return "break"
-
-        def end_fullscreen(self, event=None):
-            self.state = False
-            self.tk.attributes("-fullscreen", False)
-            return "break"
-
         self.topFrame = Frame(self, background='black')
         self.midFrame = Frame(self, background='black')
         self.bottomFrame = Frame(self, background='black')
         self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
         self.midFrame.pack(fill=BOTH, expand=YES)
         self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
-        self.state = False
-        self.bind("<Return>", toggle_fullscreen)
-        self.bind("<Escape>", end_fullscreen)
-
+        
         # clock
         self.clock = Clock(self.topFrame)
         self.clock.pack(side=RIGHT, anchor=N, padx=10, pady=60)  # padx=50, pady=60
@@ -1323,7 +1275,7 @@ class PageThree(tk.Frame):
             if str(row[1]) == 'Y':
                 self.label = tk.Label(self.midFrame, bg='black', font=('Helvetica', xxsmall_text_size), fg='white',
                                       text=str(row[0]))  # width=40, height=8
-                self.label.pack(side='top', anchor='w', padx=10)  # pady=10,
+                self.label.pack(side='top', anchor='w', padx=(20,0))  # pady=10,
             else:
                 pass
 
@@ -1415,4 +1367,6 @@ if __name__ == '__main__':
     # w = FullscreenWindow()
     w = infoFrame()
     app = Timer(w, controller=Timer) #w.tk
+    w.attributes('-fullscreen', True) #full screen
+    w.bind("<Escape>", lambda e: w.quit()) #quit program
     w.tk.mainloop()
